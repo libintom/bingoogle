@@ -1,3 +1,27 @@
+async function search() {
+    const searchInput = document.getElementById("searchInput").value;
+    const aiToggle = document.getElementById("aiToggle").checked;
+    const searchResults = document.getElementById("searchResults");
+
+    // Fetch Google search results
+    const googleResults = await fetchGoogleResults(searchInput, aiToggle);
+
+    // Fetch Bing search results
+    const bingResults = await fetchBingResults(searchInput, aiToggle);
+
+    // Display results
+    searchResults.innerHTML = `
+        <div class="google-results">
+            <h2>Google Results:</h2>
+            ${googleResults.join("<br>")}
+        </div>
+        <div class="bing-results">
+            <h2>Bing Results:</h2>
+            ${bingResults.join("<br>")}
+        </div>
+    `;
+}
+
 async function fetchGoogleResults(query, aiToggle) {
     const baseGoogleUrl = "https://www.google.com/search";
     const params = new URLSearchParams({
