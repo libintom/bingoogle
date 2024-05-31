@@ -1,13 +1,13 @@
 async function search() {
-    const searchInput = document.getElementById("searchInput").value;
+    const query = document.getElementById("searchInput").value;
     const aiToggle = document.getElementById("aiToggle").checked;
     const searchResults = document.getElementById("searchResults");
 
     // Fetch Google search results
-    const googleResults = await fetchGoogleResults(searchInput, aiToggle);
+    const googleResults = await fetchGoogleResults(query, aiToggle);
 
     // Fetch Bing search results
-    const bingResults = await fetchBingResults(searchInput, aiToggle);
+    const bingResults = await fetchBingResults(query, aiToggle);
 
     // Display results
     searchResults.innerHTML = `
@@ -22,50 +22,50 @@ async function search() {
     `;
 }
 
+// Fetch Google search results
 async function fetchGoogleResults(query, aiToggle) {
-    const baseGoogleUrl = "https://www.google.com/search";
-    const params = new URLSearchParams({
-        q: query,
-        tbm: aiToggle ? "isch" : "", // AI-powered image search if enabled
-    });
-
     try {
-        const response = await fetch(`${baseGoogleUrl}?${params}`);
+        const response = await fetch(`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=${aiToggle ? "isch" : ""}`);
         const html = await response.text();
 
-        // Parse the HTML using DOM manipulation (e.g., with Cheerio or DOMParser)
-        // Extract relevant data (titles, URLs, etc.) from the search results
-        // Return the results as an array
-        // Example: const googleResults = extractGoogleResults(html);
-        // ...
+        // Parse the HTML using DOM manipulation (e.g., with DOMParser)
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
 
-        // For demonstration purposes, let's return a placeholder result
-        return ["Google result 1", "Google result 2"];
+        // Extract relevant data (titles, URLs, etc.) from the search results
+        const googleResults = Array.from(doc.querySelectorAll(".tF2Cxc")).map(result => {
+            const title = result.querySelector(".DKV0Md").textContent;
+            const url = result.querySelector("a").getAttribute("href");
+            return `<a href="${url}">${title}</a>`;
+        });
+
+        return googleResults;
     } catch (error) {
         console.error("Error fetching Google results:", error);
-        return []; // Return an empty array in case of an error
+        return [];
     }
 }
 
+// Fetch Bing search results
 async function fetchBingResults(query, aiToggle) {
-    const baseBingUrl = "https://www.bing.com/search";
-    const params = new URLSearchParams({
-        q: query,
-        qft: aiToggle ? "+filterui:imagesize-medium" : "", // AI-powered image search if enabled
-    });
-
     try {
-        const response = await fetch(`${baseBingUrl}?${params}`);
+        const response = await fetch(`https://www.bing.com/search?q=${encodeURIComponent(query)}&qft=${aiToggle ? "+filterui:imagesize-medium" : ""}`);
         const html = await response.text();
 
-        // Parse the HTML and extract relevant data (titles, URLs, etc.)
-        // Example: const bingResults = extractBingResults(html);
-        // ...
+        // Parse the HTML using DOM manipulation (e.g., with DOMParser)
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
 
-        // For demonstration purposes, let's return a placeholder result
-        return ["Bing result 1", "Bing result 2"];
+        // Extract relevant data (titles, URLs, etc.) from the search results
+        const bingResults = Array.from(doc.querySelectorAll(".b_algo")).map(result => {
+            const title = result.querySelector("h2").textContent;
+            const url = result.querySelector("a").getAttribute("href");
+            return `<a href="${url}">${title}</a>`;
+        });
+
+        return bingResults;
     } catch (error) {
         console.error("Error fetching Bing results:", error);
-        return []; // Return an empty array in case of an error
+        return [];
     }
 }
